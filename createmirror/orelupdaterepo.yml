@@ -1,0 +1,13 @@
+---
+- name: Deplayrepo
+  hosts: all
+  tasks:
+   - name: Зеркалировать репозиторий Astra Linux
+     become: true
+     command: "rsync -avz --delete mirror.yandex.ru::astra/stable/2.12_x86-64/repository/ /var/www/astra-linux"
+   - name: restart apache2
+     become: true
+     service:
+       name: apache2
+       state: restarted
+
