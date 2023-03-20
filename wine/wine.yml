@@ -1,0 +1,26 @@
+- name: Установить программы в Wine
+  hosts: windows
+  become: true
+  vars:
+    wine_prefix: "~/.wine" # Путь к wine-префиксу
+    programs:
+      - name: "Program1" # Название программы
+        path: "/path/to/Program1.exe" # Путь к установочному файлу
+      - name: "Program2"
+        path: "/path/to/Program2.exe"
+  tasks:
+    - name: Установить Wine
+      apt:
+        name: wine
+        state: present
+    - name: Создать wine-префикс
+      wine_prefix:
+        name: "{{ wine_prefix }}"
+    - name: Установить программы
+      win_package:
+        path: "{{ item.path }}"
+        state: present
+        wine_prefix: "{{ wine_prefix }}"
+        name: "{{ item.name }}"
+      loop: "{{ programs }}"
+

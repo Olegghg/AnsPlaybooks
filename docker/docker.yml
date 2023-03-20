@@ -1,0 +1,51 @@
+---
+- name: docker
+  hosts: dhcpdns
+  become: yes
+  tasks:
+    - name: preinstall
+      apt:
+        pkg:
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+        state: present
+        update_cache: true
+    - name: mkdirkey
+      file:
+        path: /etc/apt/keyrings/
+        state: directory
+    - name: rm key
+      file:
+        dest: /etc/apt/keyrings/docker.gpg
+        state: absent
+    - name: add key
+      shell:
+        curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    - name: somerepo | apt source
+      apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+        update_cache: yes
+    - name: install
+      apt:
+        pkg:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+          - docker-buildx-plugin
+        state: present
+    - name: postinstall
+      block:
+        - name: Create group
+          group:
+            name: docker
+            state: present
+        - name: Add user in grp
+          user:
+            name: user
+            groups: docker
+            append: yes
+
